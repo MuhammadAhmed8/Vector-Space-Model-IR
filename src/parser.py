@@ -2,11 +2,11 @@ import os
 import string
 import nltk
 import re
-from nltk.stem import PorterStemmer
-from nltk.stem.snowball import SnowballStemmer
 from nltk import pos_tag
 from inverted_index import *
 from weighting import *
+from nltk.stem import WordNetLemmatizer
+
 
 # Parse all files in the given directory
 
@@ -29,8 +29,7 @@ def parse():
     global directory
     global total_docs
 
-    # porter = PorterStemmer()
-    porter = SnowballStemmer("english")
+    lemmatizer = WordNetLemmatizer()
     for docId in range(1, total_docs+1):
         doc_name = directory + "{}.txt".format(docId)
         doc = open(doc_name, 'r')
@@ -43,7 +42,7 @@ def parse():
 
         for (term, pos) in terms:
 
-            term = porter.stem(term)
+            term = lemmatizer.lemmatize(term)
 
             # building a simple and a positional index
 
@@ -53,7 +52,10 @@ def parse():
         doc.close()
 
     apply_weighting_scheme(index, total_docs)
+    magnitudes = find_vectors_magnitudes(index, total_docs)
+    normalize_weights(index, magnitudes)
     index.write_index_to_disk()
+
     # pos_index.write_index_to_disk()
 
 
@@ -123,9 +125,15 @@ def test():
 
     word = "beard"
 
-    ps = PorterStemmer()
-    w = ps.stem(word)
-    print(w)
+
+    # normalize test
+    # sum = 0
+    # for k, v in index.get_items():
+    #     for i, doc in enumerate(v['postings']):
+    #         if doc == 1:
+    #             sum += v['weights'][i]**2
+    #
+    # print("LENGTH OF DOC 1:", math.sqrt(sum))
 
 
 if __name__ == "__main__":

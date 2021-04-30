@@ -23,9 +23,9 @@ class InvertedIndex:
     def add_term(self, term, doc):
 
         if term not in self.dictionary:
-            self.dictionary[term] = {'idf': 0, 'postings': [], 'tfs': []}
+            self.dictionary[term] = {'idf': 0, 'postings': [], 'weights': []}
 
-        tfs = self.dictionary[term]['tfs']
+        tfs = self.dictionary[term]['weights']
         plist = self.dictionary[term]['postings']
 
         if doc not in plist:
@@ -33,6 +33,9 @@ class InvertedIndex:
             tfs.append(1)
         else:
             tfs[-1] += 1
+
+    def get_value(self, term):
+        return self.dictionary[term]
 
     def get_items(self):
         return self.dictionary.items()
@@ -45,17 +48,18 @@ class InvertedIndex:
 
     def get_df(self, term):
         if term in self.dictionary:
-            return self.dictionary[term]['df']
-
+            return self.dictionary[term]['idf']
 
     def read_index(self):
         with open(self.index_file) as file:
             self.dictionary = json.load(file)
 
     def intersection(self, list_1, list_2):
-        # returns common docs from two sorted postings list
-        # by taking intersection between them to support
-        # AND queries.
+        """
+            returns common docs from two sorted postings list
+            by taking intersection between them to support
+            AND queries.
+        """
 
         i = 0
         j = 0
