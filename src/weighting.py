@@ -4,6 +4,8 @@ import math
 def tf(freq):
     return freq
 
+def log_tf(freq):
+    return 1 + math.log(freq)
 
 def idf(d_freq, total_docs):
     return math.log(total_docs/d_freq)
@@ -16,7 +18,7 @@ def calculate_tf_idf(index, total_docs):
         weights = v['weights']
 
         for i, w in enumerate(weights):
-            weights[i] = tf(w) * v['idf']       # calculating tf-idf weights.
+            weights[i] = log_tf(w) * 1       # calculating tf-idf weights.
 
 
 def find_vectors_magnitudes(index, total_docs):
@@ -45,7 +47,7 @@ def get_query_vector(index, query):
     for i, t in enumerate(query):
         value = index.get_value(t)
         if bool(value):
-            q_vec.append(value['idf'])
+            q_vec.append(value['idf']*1)
             magnitude += q_vec[-1]**2
         else:
             q_vec.append(0)
@@ -55,7 +57,7 @@ def get_query_vector(index, query):
     if magnitude == 0:
         return q_vec
 
-    return [math.fabs(q/magnitude) for q in q_vec]
+    return [math.fabs(q)/magnitude for q in q_vec]
 
 
 def awein():

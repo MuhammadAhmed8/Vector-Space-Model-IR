@@ -67,7 +67,7 @@ def run_free_text_search(query, alpha=0.005):
     print(q_terms)
     docs = find_relevant_docs(q_terms)
     print(docs)
-    return [d[0] for d in docs if d[1] >= alpha]
+    return [d for d in docs if d[1] >= alpha]
 
 
 if __name__ == "__main__":
