@@ -9,7 +9,7 @@ def idf(d_freq, total_docs):
     return math.log(total_docs/d_freq)
 
 
-def apply_weighting_scheme(index, total_docs):
+def calculate_tf_idf(index, total_docs):
 
     for k, v in index.get_items():
         v['idf'] = idf(len(v['postings']), total_docs)
@@ -43,9 +43,21 @@ def get_query_vector(index, query):
     magnitude = 0
 
     for i, t in enumerate(query):
-        q_vec.append(index.get_value(t)['idf'])
-        magnitude += q_vec[-1]**2
+        value = index.get_value(t)
+        if bool(value):
+            q_vec.append(value['idf'])
+            magnitude += q_vec[-1]**2
+        else:
+            q_vec.append(0)
 
     magnitude = math.sqrt(magnitude)
 
-    return [q/magnitude for q in q_vec]
+    if magnitude == 0:
+        return q_vec
+
+    return [math.fabs(q/magnitude) for q in q_vec]
+
+
+def awein():
+    global directory
+    print(directory)

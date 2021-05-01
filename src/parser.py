@@ -5,31 +5,33 @@ import re
 from nltk import pos_tag
 from inverted_index import *
 from weighting import *
+from file_utility import *
 from nltk.stem import WordNetLemmatizer
 
 
 # Parse all files in the given directory
 
 directory = '../dataset/ShortStories/'
-stop_words_filename = "../dataset/Stopword-List.txt"
 
 parsed_docs = []
 removal_words = set()
 
 index = InvertedIndex()
-pos_index = PositionalInvertedIndex()
 total_docs = 50
 
-def parse():
 
-    # The parse function runs through all the documents in the corpus
-    # and parse it by cleaning, replacing, removing stop-words, and
-    # tokenizing them.
+def parse():
+    """
+        The parse function runs through all the documents in the corpus
+        and parse it by cleaning, replacing, removing stop-words, and
+        tokenizing them.
+    """
 
     global directory
     global total_docs
 
     lemmatizer = WordNetLemmatizer()
+
     for docId in range(1, total_docs+1):
         doc_name = directory + "{}.txt".format(docId)
         doc = open(doc_name, 'r')
@@ -38,35 +40,36 @@ def parse():
         doc_stream = re.sub(r'[^a-z1-9]+', ' ', doc_stream.lower())
 
         tokens = tokenize(doc_stream)
-        terms = process(tokens)
+        terms = process_tokens(tokens)
 
         for (term, pos) in terms:
 
             term = lemmatizer.lemmatize(term)
-
-            # building a simple and a positional index
-
             index.add_term(term, docId)
-            # pos_index.add_term(term, docId, pos)
 
         doc.close()
 
-    apply_weighting_scheme(index, total_docs)
+    calculate_tf_idf(index, total_docs)
     magnitudes = find_vectors_magnitudes(index, total_docs)
     normalize_weights(index, magnitudes)
     index.write_index_to_disk()
 
-    # pos_index.write_index_to_disk()
+
+def tokenize(stream):
+    tokens = nltk.word_tokenize(stream)
+    return tokens
 
 
-def process(tokens):
-    # Removes the removal words such as stop words, and
-    # assigning positions to tokens.
+def process_tokens(tokens):
+    """
+       Removes the removal words such as stop words, and
+       assigning positions to tokens.
+    """
 
     global removal_words
 
     if len(removal_words) == 0:
-        load_removal_words()
+        load_removal_words(removal_words)
 
     revised_tokens = []
 
@@ -95,25 +98,6 @@ def process(tokens):
 
     # returns processed tokens
     return revised_tokens
-
-
-def tokenize(stream):
-    tokens = nltk.word_tokenize(stream)
-    return tokens
-
-
-def load_removal_words():
-    # loads the stopwords from disk
-
-    global removal_words
-
-    with open(stop_words_filename, 'r') as stop_file:
-        stop_file_content = stop_file.readlines()
-
-        for word in stop_file_content:
-            word = word[:-1].rstrip()
-            if word != "":
-                removal_words.add(word)
 
 
 def test():

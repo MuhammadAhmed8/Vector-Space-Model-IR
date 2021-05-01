@@ -17,6 +17,10 @@ def rank_by_cosine_similarity(index, q_terms, q_vec, total_docs):
 
     for i, qi in enumerate(q_terms):
         v = index.get_value(qi)
+
+        if not bool(v):
+            continue
+
         postings = v['postings']
         weights = v['weights']  # tf_idf scores for term qi for the docs in postings
 

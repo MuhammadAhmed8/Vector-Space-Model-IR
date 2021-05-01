@@ -5,43 +5,55 @@
 """
 
 import re
-
 from nltk import WordNetLemmatizer
-from inverted_index import InvertedIndex
-from inverted_index import PositionalInvertedIndex
 from ranking import *
 from weighting import *
+from file_utility import *
+from inverted_index import *
 
-index = {}
-pos_index = {}
+index = InvertedIndex()
+removal_words = set()
+lemmatizer = WordNetLemmatizer()
 
 
-def load_index():
-
-    # Load inverted index from disk.
-
+def init():
+    """
+        Initializes the system by loading index files and stopwords files.
+    """
     global index
-    global pos_index
-    index = InvertedIndex()
-    index.read_index()
-    pos_index = PositionalInvertedIndex()
-    pos_index.read_index()
+    global removal_words
 
-# Result : 3 8 10 15 17 20 21 23 27 28 29 43 48 49
+    load_removal_words(removal_words)
+    load_index(index)
+
+    """
+        This dummy call to lemmatizer preloads the files used by lemmatizer
+        on application startup to speed up the query execution.
+    """
+    lemmatizer.lemmatize("")
+
 
 def process_query(query):
+    """
+        A wrapper function which takes the raw query,
+        identifies it's type, and cleans the query.
+    """
 
-    # A wrapper function which takes the raw query,
-    # identifies it's type, and cleans the query.
+    query = re.sub(r'\b-\b', '', query.lower())
+    query = re.sub(r'[^a-z1-9]+', ' ', query.lower())
 
-    lemmatizer = WordNetLemmatizer()
-    q_vec = query.split()
-    for (i, q) in enumerate(q_vec):
-        q = q.replace('-', '')
-        q = re.sub(r'[^a-z1-9]+', '', q.lower())
-        q_vec[i] = lemmatizer.lemmatize(q)
+    q_terms = query.split()
 
-    return q_vec
+    clean_q_terms = []
+
+    for (i, q) in enumerate(q_terms):
+
+        if q in removal_words:
+            continue
+
+        clean_q_terms.append(lemmatizer.lemmatize(q))
+
+    return clean_q_terms
 
 
 def find_relevant_docs(q_terms):
@@ -50,23 +62,28 @@ def find_relevant_docs(q_terms):
     return rank_by_cosine_similarity(index, q_terms, q_vec, 50)
 
 
-def run_free_text_search(query):
-
+def run_free_text_search(query, alpha=0.005):
     q_terms = process_query(query)
     print(q_terms)
     docs = find_relevant_docs(q_terms)
     print(docs)
-
-    for k in docs:
-        if k[1] >= 0.005:
-            print(k[0], end=" ")
+    return [d[0] for d in docs if d[1] >= alpha]
 
 
 if __name__ == "__main__":
 
     # Test code from console. There is a gui as well.
-
+    init()
     print("loading....")
-    load_index()
-    query = input("Enter query: ")
-    run_free_text_search(query)
+
+    while True:
+        raw_query = input("Enter query (Type 'x' to quit): ")
+
+        if raw_query == "x":
+            break
+
+        alpha_value = float(input("Enter alpha: "))
+
+        result = run_free_text_search(raw_query, alpha_value)
+        print("RESULT: ", result)
+        print(" ---------------------------------------------------------")
