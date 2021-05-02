@@ -2,12 +2,11 @@ import os
 import string
 import nltk
 import re
-from nltk import pos_tag
+from nltk.corpus import wordnet
 from inverted_index import *
 from weighting import *
 from file_utility import *
 from nltk.stem import WordNetLemmatizer
-
 
 # Parse all files in the given directory
 
@@ -18,6 +17,7 @@ removal_words = set()
 
 index = InvertedIndex()
 total_docs = 50
+lemmatizer = WordNetLemmatizer()
 
 
 def parse():
@@ -30,9 +30,7 @@ def parse():
     global directory
     global total_docs
 
-    lemmatizer = WordNetLemmatizer()
-
-    for docId in range(1, total_docs+1):
+    for docId in range(1, total_docs + 1):
         doc_name = directory + "{}.txt".format(docId)
         doc = open(doc_name, 'r')
         doc_stream = doc.read()
@@ -43,8 +41,7 @@ def parse():
         terms = process_tokens(tokens)
 
         for (term, pos) in terms:
-
-            term = lemmatizer.lemmatize(term)
+            term = lemmatize_token([term])
             index.add_term(term, docId)
 
         doc.close()
@@ -100,24 +97,44 @@ def process_tokens(tokens):
     return revised_tokens
 
 
-def test():
+# function to convert nltk tag to wordnet tag
+def nltk_tag_to_wordnet_tag(nltk_tag):
+    if nltk_tag.startswith('J'):
+        return wordnet.ADJ
+    elif nltk_tag.startswith('V'):
+        return wordnet.VERB
+    elif nltk_tag.startswith('N'):
+        return wordnet.NOUN
+    elif nltk_tag.startswith('R'):
+        return wordnet.ADV
+    else:
+        return None
 
+
+def lemmatize_token(tokens):
+    # tokenize the sentence and find the POS tag for each token
+    nltk_tagged = nltk.pos_tag(tokens)
+
+    # tuple of (token, wordnet_tag)
+    wordnet_tagged = map(lambda x: (x[0], nltk_tag_to_wordnet_tag(x[1])), nltk_tagged)
+    lemmatized_sentence = []
+
+    for word, tag in wordnet_tagged:
+        if tag is None:
+            # if there is no available tag, append the token as is
+            lemmatized_sentence.append(word)
+        else:
+            # else use the tag to lemmatize the token
+            lemmatized_sentence.append(lemmatizer.lemmatize(word, tag))
+
+    return " ".join(lemmatized_sentence)
+
+
+def test():
     # *** Test code ***
 
     parse()
     print(index.dictionary)
-
-    word = "beard"
-
-
-    # normalize test
-    # sum = 0
-    # for k, v in index.get_items():
-    #     for i, doc in enumerate(v['postings']):
-    #         if doc == 1:
-    #             sum += v['weights'][i]**2
-    #
-    # print("LENGTH OF DOC 1:", math.sqrt(sum))
 
 
 if __name__ == "__main__":

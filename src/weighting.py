@@ -18,7 +18,7 @@ def calculate_tf_idf(index, total_docs):
         weights = v['weights']
 
         for i, w in enumerate(weights):
-            weights[i] = log_tf(w) * 1       # calculating tf-idf weights.
+            weights[i] = tf(w) * v['idf']      # calculating tf-idf weights.
 
 
 def find_vectors_magnitudes(index, total_docs):
@@ -39,27 +39,37 @@ def normalize_weights(index, magnitudes):
             v['weights'][i] /= magnitudes[doc]
 
 
-def get_query_vector(index, query):
+def get_query_vector(index, q_terms):
 
-    q_vec = []
+    q_vec = {}
     magnitude = 0
 
-    for i, t in enumerate(query):
+    for i, t in enumerate(q_terms):
+        if t not in q_vec:
+            q_vec[t] = 1
+        else:
+            q_vec[t] += 1
+
+
+
+    for t, c in q_vec.items():
         value = index.get_value(t)
         if bool(value):
-            q_vec.append(value['idf']*1)
-            magnitude += q_vec[-1]**2
+            w = c
+            q_vec[t] = w
+            magnitude += w**2
         else:
-            q_vec.append(0)
+            q_vec[t] = 0
 
     magnitude = math.sqrt(magnitude)
+
 
     if magnitude == 0:
         return q_vec
 
-    return [math.fabs(q)/magnitude for q in q_vec]
+    for t, q in q_vec.items():
+        q_vec[t] = q/magnitude
+
+    return q_vec
 
 
-def awein():
-    global directory
-    print(directory)

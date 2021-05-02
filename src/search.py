@@ -4,6 +4,7 @@
     or run the gui file
 """
 
+from parser import lemmatize_token
 import re
 from nltk import WordNetLemmatizer
 from ranking import *
@@ -32,7 +33,6 @@ def init():
     """
     lemmatizer.lemmatize("")
 
-
 def process_query(query):
     """
         A wrapper function which takes the raw query,
@@ -51,22 +51,22 @@ def process_query(query):
         if q in removal_words:
             continue
 
-        clean_q_terms.append(lemmatizer.lemmatize(q))
+        clean_q_terms.append(lemmatize_token([q]))
 
     return clean_q_terms
 
 
 def find_relevant_docs(q_terms):
     q_vec = get_query_vector(index, q_terms)
-    print(q_vec)
+
     return rank_by_cosine_similarity(index, q_terms, q_vec, 50)
 
 
 def run_free_text_search(query, alpha=0.005):
     q_terms = process_query(query)
-    print(q_terms)
+
     docs = find_relevant_docs(q_terms)
-    print(docs)
+
     return [d for d in docs if d[1] >= alpha]
 
 
@@ -87,3 +87,4 @@ if __name__ == "__main__":
         result = run_free_text_search(raw_query, alpha_value)
         print("RESULT: ", result)
         print(" ---------------------------------------------------------")
+

@@ -30,10 +30,6 @@ class LoadFiles:
         return 1
 
 
-data = {'col1': ['1', '2', '3', '4'],
-        'col2': ['1', '2', '1', '3'],
-        'col3': ['1', '1', '2', '1']}
-
 class Ui_DockWidget(object):
     def __init__(self):
         self.calc = External()
@@ -194,14 +190,13 @@ class Ui_DockWidget(object):
         print(t2-t1)
         self.docs_result.show()
         html = "<div >" + result + "</div>"
-        print(html)
+
         self.docs_result.setHtml('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd"><html><meta name="qrichtext" content="1" /><style type="text/css">\
-p, li { white-space: pre-wrap; }\
-</style></head><body>'+html+"</body></html>")
+                                    p, li { white-space: pre-wrap; }\
+                                    </style></head><body>'+html+"</body></html>")
         self.time.show()
 
         self.time.setText(str(round(t2-t1, 6)) + " seconds")
-        print(result)
 
 
 if __name__ == "__main__":

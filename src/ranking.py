@@ -15,16 +15,17 @@ def rank_by_cosine_similarity(index, q_terms, q_vec, total_docs):
     print(scores)
     ranking = []
 
-    for i, qi in enumerate(q_terms):
-        v = index.get_value(qi)
+    for t, qw in q_vec.items():
+        v = index.get_value(t)
 
         if not bool(v):
             continue
 
         postings = v['postings']
         weights = v['weights']  # tf_idf scores for term qi for the docs in postings
-
+        print("posting:", postings)
+        print("weights:", weights)
         for j, doc in enumerate(postings):
-            scores[doc] += weights[j]*q_vec[i]
+            scores[doc] += weights[j]*qw
 
     return sorted(scores.items(), key=lambda x: x[1], reverse=True)
