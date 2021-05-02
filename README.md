@@ -11,7 +11,7 @@
 - Stop-words removal
 - Lemmatization
 - tf-ids weights
-- Idexing
+- Indexing
 - Cosine Similarity
 
 ![Searchly](https://user-images.githubusercontent.com/33652779/116815418-ed42ca00-ab76-11eb-9408-e7a8613fc372.png)
