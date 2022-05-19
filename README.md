@@ -1,4 +1,4 @@
-# Vector-Space-Model-IR
+# Vector Space Model - Search Engine
 
 ## RUN THE CODE ##
 
